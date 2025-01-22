@@ -10,30 +10,14 @@ body:
     id: version
     attributes:
       label: Version
-      description: |
-        The version of Shortest used.
-        Please check if you're using the [latest version](https://github.com/anti-work/shortest/releases) - your issue might be already resolved.
-      placeholder: ex. 0.4.2
-  - type: textarea
-    id: reproduction_steps
+      description: Check if you're using the [latest version](https://github.com/anti-work/shortest/releases)
+      placeholder: 0.4.2
+  - type: input
+    id: repo
     attributes:
-      label: Steps to reproduce
-      description: Please link to a repository with a minimal reproduction, or share the steps to reproduce the bug.
-      placeholder: |
-        Example steps:
-        1. Create a new directory and run `pnpm init`
-        2. Install shortest: `pnpm add @antiwork/shortest`
-        3. Create a minimal file that demonstrates the issue
-        4. Run the command that triggers the bug
-        5. Share the exact error message or unexpected behavior
-    validations:
-      required: true
-  - type: textarea
-    id: expected_behavior
-    attributes:
-      label: Expected behavior
-      description: A description of what you expect to happen.
-      placeholder: When I do [action], I expect [specific outcome] to happen
+      label: Repository URL
+      description: Link to your reproduction using the [shortest-example](https://github.com/anti-work/shortest-example) template
+      placeholder: https://github.com/username/shortest-example
     validations:
       required: true
   - type: textarea
@@ -41,23 +25,24 @@ body:
     attributes:
       label: Actual behavior
       description: |
-        What actually happened? Include any error messages or unexpected output.
+        What happened? Include any error messages or unexpected output.
         Screenshots are welcome, but text is strongly encouraged for searchability.
-      placeholder: A bug happened!
+      placeholder: Describe what went wrong...
     validations:
       required: true
   - type: textarea
-    id: context
+    id: expected_behavior
     attributes:
-      label: Additional context
-      description: Anything else that might be relevant
+      label: Expected behavior
+      description: What did you expect to happen?
+      placeholder: Describe what you expected...
     validations:
-      required: false
+      required: true
   - type: textarea
     id: system-info
     attributes:
       label: System Info
-      description: Output of `npx envinfo --system --npmPackages '@antiwork/*' --binaries --browsers`
+      description: Run `npx envinfo --system --npmPackages '@antiwork/*' --binaries --browsers`
       placeholder: |
         System:
           OS: macOS 15.2
@@ -77,36 +62,12 @@ body:
       render: shell
     validations:
       required: true
-  - type: textarea
-    id: logs
-    attributes:
-      label: Logs
-      description: |
-        Optional when reproduction is provided. Please paste the log text directly instead of using a screenshot.
-
-        1. Execute `pnpm shortest` with the `--debug-ai` flag.
-        2. Provide the error log here in the format below.
-
-        ````
-        <details>
-        <summary>Log details!</summary>
-
-        ```shell
-        // paste the log text here
-        ```
-        </details>
-        ````
   - type: checkboxes
     id: checkboxes
     attributes:
       label: Validations
-      description: Before submitting the issue, please make sure you do the following
       options:
-        - label: Read the [contributing guidelines](https://github.com/anti-work/shortest/blob/main/packages/shortest/CONTRIBUTING.md).
+        - label: I've checked for [existing issues](https://github.com/anti-work/shortest/issues)
           required: true
-        - label: Check that there isn't [already an issue](https://github.com/anti-work/shortest/issues) that reports the same bug to avoid creating a duplicate.
-          required: true
-        - label: Check that this is a concrete bug. For Q&A open a [discussion](https://github.com/anti-work/shortest/discussions).
-          required: true
-        - label: The provided reproduction is a [minimal reproducible example](https://stackoverflow.com/help/minimal-reproducible-example) of the bug.
+        - label: This is a concrete bug (for Q&A use [discussions](https://github.com/anti-work/shortest/discussions))
           required: true
