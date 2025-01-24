@@ -14,15 +14,14 @@
     "db:cleanup": "tsx lib/db/cleanup.ts",
     "stripe:webhooks": "stripe listen --forward-to http://localhost:3000/api/stripe/webhook",
     "setup": "npx tsx lib/setup.ts",
-
     "cli:build": "cd packages/shortest && pnpm build",
     "cli:dev": "cd packages/shortest && pnpm dev",
     "cli:test": "cd packages/shortest && pnpm shortest",
-
     "test": "pnpm shortest",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "typecheck": "tsc --noEmit --incremental"
+    "typecheck": "tsc --noEmit --incremental",
+    "preinstall": "node preinstall.js"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^0.0.50",
