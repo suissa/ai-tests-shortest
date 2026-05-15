@@ -13,7 +13,7 @@ Your browser does not support the video tag.
 ## Features
 
 - Natural language E2E testing framework
-- AI-powered test execution using Anthropic Claude API
+- AI-powered test execution using Anthropic, OpenAI, or OpenAI-compatible LLM providers
 - Built on Playwright
 - GitHub integration with 2FA support
 - Email validation with Mailosaur
@@ -38,7 +38,7 @@ echo ".shortest/" >> .gitignore
 
 ### Quick start
 
-1. Determine your test entry and add your Anthropic API key in config file: `shortest.config.ts`
+1. Determine your test entry and add your LLM provider settings in config file: `shortest.config.ts`
 
 ```typescript
 import type { ShortestConfig } from "@antiwork/shortest";
@@ -47,7 +47,14 @@ export default {
   headless: false,
   baseUrl: "http://localhost:3000",
   testPattern: "**/*.test.ts",
-  anthropicKey: process.env.ANTHROPIC_API_KEY,
+  ai: {
+    // Use "anthropic", "openai", or "openai-compatible".
+    provider: "openai-compatible",
+    apiKey: process.env.SHORTEST_AI_API_KEY || process.env.OPENAI_API_KEY,
+    model: process.env.SHORTEST_AI_MODEL || "gpt-4o",
+    // Optional: set for OpenAI-compatible providers like Groq, OpenRouter, Ollama, etc.
+    baseURL: process.env.SHORTEST_AI_BASE_URL,
+  },
 } satisfies ShortestConfig;
 ```
 
@@ -193,7 +200,7 @@ You can find example tests in the [`examples`](./examples) directory.
 
 ### CI setup
 
-You can run Shortest in your CI/CD pipeline by running tests in headless mode. Make sure to add your Anthropic API key to your CI/CD pipeline secrets.
+You can run Shortest in your CI/CD pipeline by running tests in headless mode. Make sure to add your LLM API key to your CI/CD pipeline secrets.
 
 [See example here](https://github.com/anti-work/shortest/blob/main/.github/workflows/shortest.yml)
 
@@ -218,7 +225,10 @@ shortest --github-code --secret=<OTP_SECRET>
 Required in `.env.local`:
 
 ```bash
-ANTHROPIC_API_KEY=your_api_key
+SHORTEST_AI_API_KEY=your_api_key
+SHORTEST_AI_PROVIDER=openai-compatible # anthropic, openai, or openai-compatible
+SHORTEST_AI_MODEL=gpt-4o
+# SHORTEST_AI_BASE_URL=https://api.openai.com/v1 # optional for compatible providers
 GITHUB_TOTP_SECRET=your_secret  # Only for GitHub auth tests
 ```
 

@@ -1,6 +1,30 @@
 import { anthropic } from "@ai-sdk/anthropic";
+import { createOpenAI } from "@ai-sdk/openai";
 import { streamObject } from "ai";
 import { GenerateTestsInput, TestFileSchema } from "./schema";
+
+function getModel() {
+  const provider =
+    process.env.SHORTEST_AI_PROVIDER ||
+    process.env.SHORTEST_LLM_PROVIDER ||
+    (process.env.SHORTEST_AI_BASE_URL || process.env.OPENAI_API_KEY
+      ? "openai-compatible"
+      : "anthropic");
+
+  if (provider === "anthropic") {
+    return anthropic(
+      process.env.SHORTEST_AI_MODEL || "claude-3-5-sonnet-20240620",
+    );
+  }
+
+  const openai = createOpenAI({
+    apiKey: process.env.SHORTEST_AI_API_KEY || process.env.OPENAI_API_KEY,
+    baseURL: process.env.SHORTEST_AI_BASE_URL,
+    compatibility: provider === "openai" ? "strict" : "compatible",
+  });
+
+  return openai(process.env.SHORTEST_AI_MODEL || "gpt-4o");
+}
 
 export async function POST(req: Request) {
   const { mode, pr_diff, test_files, test_logs } =
@@ -40,7 +64,7 @@ export async function POST(req: Request) {
   Respond with an array of test files with their name being the path to the file and the content being the full contents of the updated test file.`;
 
   const result = await streamObject({
-    model: anthropic("claude-3-5-sonnet-20240620"),
+    model: getModel(),
     schema: TestFileSchema,
     prompt,
   });

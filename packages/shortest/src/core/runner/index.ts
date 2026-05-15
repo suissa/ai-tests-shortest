@@ -1,5 +1,4 @@
 import { pathToFileURL } from "url";
-import Anthropic from "@anthropic-ai/sdk";
 import { glob } from "glob";
 import pc from "picocolors";
 import { APIRequest, BrowserContext } from "playwright";
@@ -179,19 +178,27 @@ export class TestRunner {
       },
     });
 
+    const aiConfig = this.config.ai || {
+      provider: "anthropic" as const,
+      apiKey: this.config.anthropicKey,
+      model: "claude-3-5-sonnet-20241022",
+    };
+
     // this may never happen as the config is initialized before this code is executed
-    if (!this.config.anthropicKey) {
+    if (!aiConfig.apiKey) {
       return {
         result: "fail" as const,
-        reason: "ANTHROPIC_KEY is not set",
+        reason: "AI API key is not set",
         tokenUsage: { input: 0, output: 0 },
       };
     }
 
     const aiClient = new AIClient(
       {
-        apiKey: this.config.anthropicKey,
-        model: "claude-3-5-sonnet-20241022",
+        provider: aiConfig.provider,
+        apiKey: aiConfig.apiKey,
+        model: aiConfig.model,
+        baseURL: aiConfig.baseURL,
         maxMessages: 10,
         debug: this.debugAI,
       },
@@ -292,18 +299,15 @@ export class TestRunner {
     const finalMessage = result.finalResponse.content.find(
       (block: any) =>
         block.type === "text" &&
-        (block as Anthropic.Beta.Messages.BetaTextBlock).text.includes(
-          '"result":',
-        ),
+        typeof block.text === "string" &&
+        block.text.includes('"result":'),
     );
 
     if (!finalMessage || finalMessage.type !== "text") {
       throw new Error("No test result found in AI response");
     }
 
-    const jsonMatch = (
-      finalMessage as Anthropic.Beta.Messages.BetaTextBlock
-    ).text.match(/{[\s\S]*}/);
+    const jsonMatch = finalMessage.text.match(/{[\s\S]*}/);
     if (!jsonMatch) {
       throw new Error("Invalid test result format");
     }
