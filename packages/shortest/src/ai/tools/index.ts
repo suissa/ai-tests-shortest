@@ -109,3 +109,77 @@ export const AITools = [
 ] as const;
 
 export type AITool = (typeof AITools)[number]["name"];
+
+const browserActionSchema = {
+  type: "object",
+  properties: {
+    action: {
+      type: "string",
+      enum: [
+        "mouse_move",
+        "left_click",
+        "left_click_drag",
+        "right_click",
+        "middle_click",
+        "double_click",
+        "screenshot",
+        "cursor_position",
+        "clear_session",
+        "type",
+        "key",
+      ],
+      description: "Browser action to perform.",
+    },
+    coordinates: {
+      type: "array",
+      items: { type: "number" },
+      minItems: 2,
+      maxItems: 2,
+      description: "x,y screen coordinates for mouse actions.",
+    },
+    text: {
+      type: "string",
+      description: "Text to type or keyboard key/shortcut to press.",
+    },
+  },
+  required: ["action"],
+  additionalProperties: false,
+};
+
+const toOpenAIFunctionTool = (tool: {
+  name: string;
+  description?: string;
+  input_schema?: Record<string, unknown>;
+}) => ({
+  type: "function" as const,
+  function: {
+    name: tool.name,
+    description: tool.description || `Execute ${tool.name}`,
+    parameters: tool.input_schema || browserActionSchema,
+  },
+});
+
+export const OpenAITools = [
+  toOpenAIFunctionTool({
+    name: "computer",
+    description:
+      "Interact with the browser using screenshots, mouse, keyboard, and session actions.",
+    input_schema: browserActionSchema,
+  }),
+  ...AITools.filter((tool) => !("type" in tool)).map(toOpenAIFunctionTool),
+  toOpenAIFunctionTool({
+    name: "bash",
+    description: "Execute a bash command.",
+    input_schema: {
+      type: "object",
+      properties: {
+        command: {
+          type: "string",
+          description: "Command to execute in bash.",
+        },
+      },
+      required: ["command"],
+      additionalProperties: false,
+    },
+  }),
+] as const;

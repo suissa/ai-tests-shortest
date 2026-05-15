@@ -1,8 +1,12 @@
 import { ActionInput } from "./browser";
 
+export type AIProvider = "anthropic" | "openai" | "openai-compatible";
+
 export interface AIConfig {
+  provider?: AIProvider;
   apiKey: string;
   model?: string;
+  baseURL?: string;
   maxMessages?: number;
   debug?: boolean;
 }

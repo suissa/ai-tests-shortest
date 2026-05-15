@@ -59,7 +59,10 @@ ${pc.bold("Examples:")}
 
 ${pc.bold("Environment Setup:")}
   Required variables in .env.local:
-  - ANTHROPIC_API_KEY     Required for AI test execution
+  - SHORTEST_AI_API_KEY   Required for AI test execution
+  - SHORTEST_AI_PROVIDER  Optional: anthropic, openai, or openai-compatible
+  - SHORTEST_AI_MODEL     Optional model override
+  - SHORTEST_AI_BASE_URL  Optional OpenAI-compatible API base URL
   - GITHUB_TOTP_SECRET    Required for GitHub authentication
   - GITHUB_USERNAME       GitHub login credentials
   - GITHUB_PASSWORD       GitHub login credentials
@@ -163,7 +166,7 @@ async function main() {
         console.error(pc.dim("  - headless: boolean"));
         console.error(pc.dim("  - baseUrl: string"));
         console.error(pc.dim("  - testPattern: string"));
-        console.error(pc.dim("  - anthropicKey: string"));
+        console.error(pc.dim("  - ai.apiKey: string"));
         console.error();
       } else {
         console.error(pc.red("\nError:"), error.message);

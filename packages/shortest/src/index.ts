@@ -10,6 +10,7 @@ import {
   TestChain,
   ShortestConfig,
 } from "./types";
+import { AIProvider } from "./types/ai";
 
 // to include the global expect in the generated d.ts file
 import "./globals";
@@ -47,12 +48,17 @@ if (!global.__shortest__) {
 
 function validateConfig(config: Partial<ShortestConfig>) {
   const missingFields: string[] = [];
+  const aiApiKey =
+    config.ai?.apiKey ||
+    config.anthropicKey ||
+    process.env.SHORTEST_AI_API_KEY ||
+    process.env.OPENAI_API_KEY ||
+    process.env.ANTHROPIC_API_KEY;
 
   if (config.headless === undefined) missingFields.push("headless");
   if (!config.baseUrl) missingFields.push("baseUrl");
   if (!config.testPattern) missingFields.push("testPattern");
-  if (!config.anthropicKey && !process.env.ANTHROPIC_API_KEY)
-    missingFields.push("anthropicKey");
+  if (!aiApiKey) missingFields.push("ai.apiKey");
 
   if (missingFields.length > 0) {
     throw new Error(
@@ -60,6 +66,51 @@ function validateConfig(config: Partial<ShortestConfig>) {
         missingFields.map((field) => `  - ${field}`).join("\n"),
     );
   }
+}
+
+function resolveAIProvider(config: Partial<ShortestConfig>): AIProvider {
+  if (process.env.SHORTEST_AI_PROVIDER) {
+    return process.env.SHORTEST_AI_PROVIDER as AIProvider;
+  }
+
+  if (process.env.SHORTEST_LLM_PROVIDER) {
+    return process.env.SHORTEST_LLM_PROVIDER as AIProvider;
+  }
+
+  if (config.ai?.provider) {
+    return config.ai.provider;
+  }
+
+  if (config.ai?.baseURL || process.env.SHORTEST_AI_BASE_URL) {
+    return "openai-compatible";
+  }
+
+  if (
+    config.ai?.apiKey ||
+    process.env.SHORTEST_AI_API_KEY ||
+    process.env.OPENAI_API_KEY
+  ) {
+    return "openai";
+  }
+
+  return "anthropic";
+}
+
+function resolveAIApiKey(
+  config: Partial<ShortestConfig>,
+  provider: AIProvider,
+): string | undefined {
+  if (process.env.SHORTEST_AI_API_KEY) {
+    return process.env.SHORTEST_AI_API_KEY;
+  }
+
+  if (provider === "anthropic") {
+    return (
+      process.env.ANTHROPIC_API_KEY || config.ai?.apiKey || config.anthropicKey
+    );
+  }
+
+  return process.env.OPENAI_API_KEY || config.ai?.apiKey;
 }
 
 export async function initialize() {
@@ -80,9 +131,17 @@ export async function initialize() {
       if (module.default) {
         const config = module.default;
         validateConfig(config);
+        const provider = resolveAIProvider(config);
 
         globalConfig = {
           ...config,
+          ai: {
+            ...config.ai,
+            provider,
+            apiKey: resolveAIApiKey(config, provider),
+            model: process.env.SHORTEST_AI_MODEL || config.ai?.model,
+            baseURL: process.env.SHORTEST_AI_BASE_URL || config.ai?.baseURL,
+          },
           anthropicKey: process.env.ANTHROPIC_API_KEY || config.anthropicKey,
         };
 
@@ -102,7 +161,7 @@ export async function initialize() {
       "  - headless: boolean\n" +
       "  - baseUrl: string\n" +
       "  - testPattern: string\n" +
-      "  - anthropicKey: string",
+      "  - ai.apiKey: string",
   );
 }
 
